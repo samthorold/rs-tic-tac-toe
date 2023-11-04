@@ -1,4 +1,5 @@
 use std::{
+    cmp::{max, min, Ordering},
     collections::HashMap,
     env,
     fmt::{self, Display, Formatter},
@@ -145,12 +146,29 @@ impl GameState {
         }
         cells
     }
+    fn score(&self) -> i32 {
+        todo!()
+    }
 }
 
 #[derive(PartialEq, Eq, Hash, Clone)]
 struct Node {
     state: GameState,
     depth: i32,
+    is_maximum: bool,
+    is_minimum: bool,
+}
+
+impl Ord for Node {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.state.score().cmp(&other.state.score())
+    }
+}
+
+impl PartialOrd for Node {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 impl Node {
@@ -160,9 +178,42 @@ impl Node {
             nodes.push(Node {
                 state,
                 depth: self.depth + 1,
+                is_maximum: false,
+                is_minimum: false,
             });
         }
         nodes
+    }
+    fn is_terminal(&self) -> bool {
+        (self.depth == 9) | (self.score() != 0)
+    }
+    fn score(&self) -> i32 {
+        if self.is_maximum {
+            return 100;
+        }
+        if self.is_minimum {
+            return -100;
+        }
+        return self.state.score();
+    }
+    fn is_maximising(&self) -> bool {
+        return self.state.next_value() == CellValue::O;
+    }
+    fn minimum(&self) -> Node {
+        return Node {
+            state: GameState::new(),
+            depth: 0,
+            is_maximum: false,
+            is_minimum: true,
+        };
+    }
+    fn maximum(&self) -> Node {
+        return Node {
+            state: GameState::new(),
+            depth: 0,
+            is_maximum: true,
+            is_minimum: false,
+        };
     }
 }
 
@@ -195,22 +246,43 @@ impl Tree {
     }
 }
 
+fn minimax(node: &Node, a: &Node, b: &Node) -> Node {
+    if node.is_terminal() {
+        return node.clone();
+    }
+    let best_node = match node.is_maximising() {
+        true => node.minimum(),
+        false => node.maximum(),
+    };
+    for child in node.children() {
+        if node.is_maximising() {
+            let minimax_value = minimax(&child, a, b);
+            let best_node = max(&best_node, &minimax_value);
+            let a = max(a, best_node);
+            if best_node >= b {
+                break;
+            }
+        } else {
+            let minimax_value = minimax(&child, a, b);
+            let best_node = min(&best_node, &minimax_value);
+            let b = min(b, best_node);
+            if best_node <= a {
+                break;
+            }
+        };
+    }
+    best_node
+}
+
 fn main() {
     let args = CliArgs::from_args(env::args());
     dbg!(&args);
     let game = GameState::new();
-    // let game = game.next_state(1, 1);
-    // println!("{}", game);
-    // let game = game.next_state(1, 2);
-    // println!("{}", game);
-    // let game = game.next_state(3, 2);
-    // println!("{}", game);
-    // for c in game.children() {
-    //     println!("{}", c)
-    // }
     let node = Node {
         state: game,
         depth: 0,
+        is_maximum: false,
+        is_minimum: false,
     };
 
     let mut tree = Tree::new(&node);
