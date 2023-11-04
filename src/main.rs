@@ -1,4 +1,9 @@
-use std::{collections::HashMap, env, str::FromStr};
+use std::{
+    collections::HashMap,
+    env,
+    fmt::{self, Display, Formatter},
+    str::FromStr,
+};
 
 #[derive(Debug)]
 enum PlayerKind {
@@ -33,7 +38,7 @@ impl CliArgs {
     }
 }
 
-#[derive(PartialEq, Eq, Hash, Debug)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 struct CellAddr {
     row: usize,
     col: usize,
@@ -46,19 +51,19 @@ enum CellValue {
     N,
 }
 
-#[derive(PartialEq, Eq, Hash, Debug)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 struct Cell {
     addr: CellAddr,
     value: CellValue,
 }
 
-#[derive(PartialEq, Eq, Hash, Debug)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 struct GameState {
     cells: [Cell; 9],
 }
 
-impl ToString for GameState {
-    fn to_string(&self) -> String {
+impl Display for GameState {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut s = String::new();
         for cell in &self.cells {
             match cell.value {
@@ -70,7 +75,7 @@ impl ToString for GameState {
                 s.push('\n');
             }
         }
-        s
+        write!(f, "{}", s)
     }
 }
 
@@ -142,22 +147,75 @@ impl GameState {
     }
 }
 
-struct GameTree {
-    tree: HashMap<GameState, Vec<GameState>>,
+#[derive(PartialEq, Eq, Hash, Clone)]
+struct Node {
+    state: GameState,
+    depth: i32,
+}
+
+impl Node {
+    fn children(&self) -> Vec<Node> {
+        let mut nodes = Vec::new();
+        for state in self.state.children() {
+            nodes.push(Node {
+                state,
+                depth: self.depth + 1,
+            });
+        }
+        nodes
+    }
+}
+
+/// What is the point of this?
+/// 1. Don't want to calculate states on the fly all the time.
+/// 2. Rust gets _super_ upset about tree-like structures.
+struct Tree {
+    tree: HashMap<Node, Vec<Node>>,
+}
+
+impl Tree {
+    fn new(node: &Node) -> Tree {
+        let mut tree = Tree {
+            tree: HashMap::new(),
+        };
+        tree.tree.insert(node.clone(), node.children());
+        tree
+    }
+    fn children(&mut self, node: &Node) -> &Vec<Node> {
+        if !self.tree.contains_key(node) {
+            self.tree.insert(node.clone(), node.children());
+        }
+        let children = self.tree.get(&node);
+        match children {
+            Some(children) => return children,
+            None => {
+                panic!("Somehow no children.")
+            }
+        }
+    }
 }
 
 fn main() {
     let args = CliArgs::from_args(env::args());
     dbg!(&args);
     let game = GameState::new();
-    println!("{}", game.to_string());
-    let game = game.next_state(1, 1);
-    println!("{}", game.to_string());
-    let game = game.next_state(1, 2);
-    println!("{}", game.to_string());
-    let game = game.next_state(3, 2);
-    println!("{}", game.to_string());
-    for c in game.children() {
-        println!("{}", c.to_string())
+    // let game = game.next_state(1, 1);
+    // println!("{}", game);
+    // let game = game.next_state(1, 2);
+    // println!("{}", game);
+    // let game = game.next_state(3, 2);
+    // println!("{}", game);
+    // for c in game.children() {
+    //     println!("{}", c)
+    // }
+    let node = Node {
+        state: game,
+        depth: 0,
+    };
+
+    let mut tree = Tree::new(&node);
+    let children = tree.children(&node);
+    for child in children {
+        println!("{}", child.state)
     }
 }
