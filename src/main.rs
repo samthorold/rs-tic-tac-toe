@@ -1,46 +1,46 @@
 use std::{
     cmp::{max, min, Ordering},
-    env,
+    // env,
     fmt::{self, Display, Formatter},
-    str::FromStr,
+    // str::FromStr,
 };
 
 const MAX_SCORE: usize = 10;
 const NODE_MAX_SCORE: i32 = 100;
 const NODE_MIN_SCORE: i32 = -100;
 
-#[derive(Debug)]
-enum PlayerKind {
-    Interactive,
-    Computer,
-}
+// #[derive(Debug)]
+// enum PlayerKind {
+//     Interactive,
+//     Computer,
+// }
 
-impl FromStr for PlayerKind {
-    type Err = ();
-    fn from_str(s: &str) -> Result<PlayerKind, Self::Err> {
-        match s {
-            "interactive" => Ok(PlayerKind::Interactive),
-            "computer" => Ok(PlayerKind::Computer),
-            _ => Err(()),
-        }
-    }
-}
+// impl FromStr for PlayerKind {
+//     type Err = ();
+//     fn from_str(s: &str) -> Result<PlayerKind, Self::Err> {
+//         match s {
+//             "interactive" => Ok(PlayerKind::Interactive),
+//             "computer" => Ok(PlayerKind::Computer),
+//             _ => Err(()),
+//         }
+//     }
+// }
 
-#[derive(Debug)]
-struct CliArgs {
-    player1: PlayerKind,
-    player2: PlayerKind,
-}
+// #[derive(Debug)]
+// struct CliArgs {
+//     player1: PlayerKind,
+//     player2: PlayerKind,
+// }
 
-impl CliArgs {
-    fn from_args(args: env::Args) -> CliArgs {
-        let args: Vec<String> = args.collect();
-        CliArgs {
-            player1: PlayerKind::from_str(&args[1]).unwrap(),
-            player2: PlayerKind::from_str(&args[2]).unwrap(),
-        }
-    }
-}
+// impl CliArgs {
+//     fn from_args(args: env::Args) -> CliArgs {
+//         let args: Vec<String> = args.collect();
+//         CliArgs {
+//             player1: PlayerKind::from_str(&args[1]).unwrap(),
+//             player2: PlayerKind::from_str(&args[2]).unwrap(),
+//         }
+//     }
+// }
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 struct CellAddr {
@@ -251,6 +251,8 @@ impl GameState {
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 struct Node {
     states: Vec<GameState>,
+    // want the moves really
+    // although that could be part of the GameState
     is_maximum: bool,
     is_minimum: bool,
 }
@@ -334,9 +336,7 @@ impl Node {
 }
 
 fn minimax(node: &Node, mut a: Node, mut b: Node) -> Node {
-    // println!("Examining\n{}", node);
     if node.is_terminal() {
-        // println!("  Is terminal");
         return node.clone();
     }
     let mut best_node = match node.is_maximising() {
@@ -345,55 +345,40 @@ fn minimax(node: &Node, mut a: Node, mut b: Node) -> Node {
     };
     for child in node.children() {
         let minimax_value = minimax(&child, a.clone(), b.clone());
-        // println!("{:#?} Minimax value\n{}", node.to_play(), minimax_value);
-        // println!("Comparing to\n{}a\n{}b\n{}", best_node, a, b);
         if node.is_maximising() {
             best_node = max(best_node.clone(), minimax_value.clone());
-            // println!("Best Node\n{}", best_node);
             a = max(a.clone(), best_node.clone());
-            // println!("New a\n{}", a);
             if best_node >= b.clone() {
-                // println!("Greater than b.");
-                // println!("Returning {}", best_node);
                 return best_node.clone();
             }
         } else {
             best_node = min(best_node.clone(), minimax_value);
-            // println!("Best Node\n{}", best_node);
             b = min(b.clone(), best_node.clone());
-            // println!("New b\n{}", b);
             if best_node <= a.clone() {
-                // println!("Less than a.");
-                // println!("Returning {}", best_node);
                 return best_node.clone();
             }
         };
     }
-    // println!("Returning {}", best_node);
     best_node
 }
 
 fn main() {
-    let args = CliArgs::from_args(env::args());
-    dbg!(&args);
-    let game = GameState::new();
+    // let args = CliArgs::from_args(env::args());
+    // dbg!(&args);
+    let game = GameState::new()
+        .next_state(3, 1)
+        .next_state(2, 2)
+        .next_state(3, 3)
+        .next_state(3, 2)
+        .next_state(2, 1)
+        .next_state(1, 2);
+    println!("{}", game.score());
     let node = Node {
         states: vec![game],
         is_maximum: false,
         is_minimum: false,
     };
-    // println!("{}", node);
-    // for child in node.children() {
-    //     println!("{}", child);
-    //     if child.score() > 0 {
-    //         println!("Latest state\n{}", child.latest_state());
-    //         println!("-- Example states");
-    //         for state in child.states {
-    //             println!("{}", state);
-    //         }
-    //         println!("--");
-    //     }
-    // }
+    println!("{}", node);
 
     let variation = minimax(&node, node.minimum(), node.maximum());
     println!("Node {}", variation);
