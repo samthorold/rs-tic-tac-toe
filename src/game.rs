@@ -26,7 +26,6 @@ struct Cell {
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub struct GameState {
     cells: [Cell; 9],
-    pub last_move: Option<CellAddr>,
     pub to_play: CellValue,
 }
 
@@ -61,7 +60,6 @@ impl GameState {
         GameState {
             cells: <[Cell; 9]>::try_from(cells).unwrap(),
             to_play: CellValue::O,
-            last_move: None,
         }
     }
     fn next_player(&self) -> CellValue {
@@ -71,7 +69,9 @@ impl GameState {
             CellValue::N => panic!("Should not have N to play."),
         }
     }
-    pub fn next_state(&self, row: usize, col: usize) -> GameState {
+    pub fn next_state(&self, addr: &CellAddr) -> GameState {
+        let row = addr.row;
+        let col = addr.col;
         if (row < 1) | (row > 9) {
             panic!("Row value invalid.")
         }
@@ -96,19 +96,18 @@ impl GameState {
             })
         }
         GameState {
-            last_move: Some(CellAddr { row, col }),
             cells: <[Cell; 9]>::try_from(cells).unwrap(),
             to_play: self.next_player(),
         }
     }
-    pub fn children(&self) -> Vec<GameState> {
-        let mut cells = Vec::new();
+    pub fn next_moves(&self) -> Vec<&CellAddr> {
+        let mut addrs = Vec::new();
         for cell in &self.cells {
             if cell.value == CellValue::N {
-                cells.push(self.next_state(cell.addr.row, cell.addr.col));
+                addrs.push(&cell.addr);
             }
         }
-        cells
+        addrs
     }
     pub fn depth(&self) -> usize {
         self.cells
@@ -188,54 +187,55 @@ mod test_score {
         let game = GameState::new();
         assert_eq!(game.score(), 0);
         assert_eq!(game.is_terminal(), false);
+        assert_eq!(game.to_play, CellValue::O);
     }
     #[test]
     fn one_move() {
-        let game = GameState::new().next_state(1, 1);
+        let game = GameState::new().next_state(&CellAddr { row: 1, col: 1 });
         assert_eq!(game.score(), 0);
         assert_eq!(game.is_terminal(), false);
     }
     #[test]
     fn x_wins_row() {
         let game = GameState::new()
-            .next_state(1, 1)
-            .next_state(2, 1)
-            .next_state(1, 2)
-            .next_state(2, 2)
-            .next_state(1, 3);
+            .next_state(&CellAddr { row: 1, col: 1 })
+            .next_state(&CellAddr { row: 2, col: 1 })
+            .next_state(&CellAddr { row: 1, col: 2 })
+            .next_state(&CellAddr { row: 2, col: 2 })
+            .next_state(&CellAddr { row: 1, col: 3 });
         assert_eq!(game.score(), 10);
         assert_eq!(game.is_terminal(), true);
     }
     #[test]
     fn x_wins_col() {
         let game = GameState::new()
-            .next_state(1, 1)
-            .next_state(1, 2)
-            .next_state(2, 1)
-            .next_state(2, 2)
-            .next_state(3, 1);
+            .next_state(&CellAddr { row: 1, col: 1 })
+            .next_state(&CellAddr { row: 1, col: 2 })
+            .next_state(&CellAddr { row: 2, col: 1 })
+            .next_state(&CellAddr { row: 2, col: 2 })
+            .next_state(&CellAddr { row: 3, col: 1 });
         assert_eq!(game.score(), 10);
         assert_eq!(game.is_terminal(), true);
     }
     #[test]
     fn x_wins_diag_from_top_left() {
         let game = GameState::new()
-            .next_state(1, 1)
-            .next_state(1, 2)
-            .next_state(2, 2)
-            .next_state(2, 3)
-            .next_state(3, 3);
+            .next_state(&CellAddr { row: 1, col: 1 })
+            .next_state(&CellAddr { row: 1, col: 2 })
+            .next_state(&CellAddr { row: 2, col: 2 })
+            .next_state(&CellAddr { row: 2, col: 3 })
+            .next_state(&CellAddr { row: 3, col: 3 });
         assert_eq!(game.score(), 10);
         assert_eq!(game.is_terminal(), true);
     }
     #[test]
     fn x_wins_diag_from_bottom_left() {
         let game = GameState::new()
-            .next_state(3, 1)
-            .next_state(1, 2)
-            .next_state(2, 2)
-            .next_state(2, 3)
-            .next_state(1, 3);
+            .next_state(&CellAddr { row: 3, col: 1 })
+            .next_state(&CellAddr { row: 1, col: 2 })
+            .next_state(&CellAddr { row: 2, col: 2 })
+            .next_state(&CellAddr { row: 2, col: 3 })
+            .next_state(&CellAddr { row: 1, col: 3 });
         assert_eq!(game.score(), 10);
         assert_eq!(game.is_terminal(), true);
     }
