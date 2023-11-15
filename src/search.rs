@@ -41,38 +41,116 @@ impl Node {
 }
 
 pub fn minimax(node: &Node, mut a: i32, mut b: i32) -> Node {
-    println!("{} {}, {}, {}", node.state.depth(), node.score(), a, b);
+    // println!(
+    //     "Entering minimax depth: {}, score: {}, a: {}, b: {}\n{}",
+    //     node.state.depth(),
+    //     node.score(),
+    //     a,
+    //     b,
+    //     node.state
+    // );
     if node.is_terminal() {
+        // println!("Terminal");
         return node.clone();
     }
+    let children = node.children();
+    if children.len() == 0 {
+        panic!("Not terminal and no children.")
+    }
     let mut best_node = node.clone();
-    for child_node in node.children() {
+    for child_node in children {
         let mm_node = minimax(&child_node, a, b);
+        println!(
+            "Just left minimax depth: {}, score: {}, a: {}, b: {}\n{}",
+            mm_node.state.depth(),
+            mm_node.score(),
+            a,
+            b,
+            mm_node.state
+        );
         let mm_score = mm_node.score();
         if node.is_maximising() {
             if mm_score > best_node.score() {
                 best_node = mm_node;
+                // println!(
+                //     "depth: {}, score: {}, a: {}, b: {}\n{}",
+                //     best_node.state.depth(),
+                //     best_node.score(),
+                //     a,
+                //     b,
+                //     node.state
+                // );
             }
             if mm_score > a {
+                // println!("a: {}", mm_score);
+                // println!(
+                //     "depth: {}, score: {}, a: {}, b: {}\n{}",
+                //     best_node.state.depth(),
+                //     best_node.score(),
+                //     a,
+                //     b,
+                //     node.state
+                // );
                 a = mm_score;
             }
             if best_node.score() >= b {
-                println!("node >= b {}\n{}", b, best_node.state);
+                // println!("node >= b {}\n{}", b, best_node.state);
+                // println!(
+                //     "depth: {}, score: {}, a: {}, b: {}\n{}",
+                //     best_node.state.depth(),
+                //     best_node.score(),
+                //     a,
+                //     b,
+                //     node.state
+                // );
                 break;
             }
         } else {
             if mm_score < best_node.score() {
                 best_node = mm_node;
+                // println!(
+                //     "depth: {}, score: {}, a: {}, b: {}\n{}",
+                //     best_node.state.depth(),
+                //     best_node.score(),
+                //     a,
+                //     b,
+                //     node.state
+                // );
             }
             if mm_score < b {
+                // println!("b: {}", mm_score);
+                // println!(
+                //     "depth: {}, score: {}, a: {}, b: {}\n{}",
+                //     best_node.state.depth(),
+                //     best_node.score(),
+                //     a,
+                //     b,
+                //     node.state
+                // );
                 b = mm_score;
             }
             if best_node.score() <= a {
-                println!("node <= b {}\n{}", a, best_node.state);
+                // println!("node <= b {}\n{}", a, best_node.state);
+                // println!(
+                //     "Entering minimax depth: {}, score: {}, a: {}, b: {}\n{}",
+                //     best_node.state.depth(),
+                //     best_node.score(),
+                //     a,
+                //     b,
+                //     node.state
+                // );
                 break;
             }
         };
     }
-    println!("Exiting minimax\n{}", best_node.state);
+    // println!("Exiting minimax\n{}", best_node.state);
+    println!(
+        "Exiting minimax depth: {}, score: {}, a: {}, b: {}\n{}",
+        best_node.state.depth(),
+        best_node.score(),
+        a,
+        b,
+        best_node.state
+    );
     best_node
 }
