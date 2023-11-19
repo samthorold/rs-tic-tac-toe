@@ -1,6 +1,6 @@
 use crate::game::{CellAddr, GameState};
-use crate::search::minimax;
 use crate::search::Node;
+use crate::search::{alphabeta, minimax};
 
 mod game;
 mod search;
@@ -8,10 +8,6 @@ mod search;
 fn main() {
     let mut game = GameState::new()
         .next_state(&CellAddr { row: 1, col: 1 })
-        .next_state(&CellAddr { row: 2, col: 1 })
-        .next_state(&CellAddr { row: 1, col: 2 })
-        .next_state(&CellAddr { row: 1, col: 3 })
-        .next_state(&CellAddr { row: 3, col: 2 })
         .next_state(&CellAddr { row: 2, col: 2 });
     // .next_state(&CellAddr { row: 3, col: 1 });
     println!("{}", game);
@@ -20,7 +16,8 @@ fn main() {
             state: game.clone(),
             moves: Vec::new(),
         };
-        let variation = minimax(&node, -100, 100);
+        let variation = alphabeta(&node, -100, 100);
+        // let variation = minimax(&node);
         println!("{:?}", variation.moves);
         let next_move = variation.moves[0].clone();
         println!("{:?}\n", next_move);

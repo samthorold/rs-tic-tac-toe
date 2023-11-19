@@ -14,7 +14,6 @@ impl Node {
             let mut moves = Vec::new();
             moves.clone_from(&self.moves);
             moves.push(next_move.clone());
-            // println!("{:?}", moves);
             nodes.push(Node {
                 state: next_state,
                 moves,
@@ -40,117 +39,80 @@ impl Node {
     }
 }
 
-pub fn minimax(node: &Node, mut a: i32, mut b: i32) -> Node {
-    // println!(
-    //     "Entering minimax depth: {}, score: {}, a: {}, b: {}\n{}",
-    //     node.state.depth(),
-    //     node.score(),
-    //     a,
-    //     b,
-    //     node.state
-    // );
+pub fn minimax(node: &Node) -> Node {
     if node.is_terminal() {
-        // println!("Terminal");
         return node.clone();
     }
-    let children = node.children();
-    if children.len() == 0 {
-        panic!("Not terminal and no children.")
-    }
-    let mut best_node = node.clone();
-    for child_node in children {
-        let mm_node = minimax(&child_node, a, b);
-        println!(
-            "Just left minimax depth: {}, score: {}, a: {}, b: {}\n{}",
-            mm_node.state.depth(),
-            mm_node.score(),
-            a,
-            b,
-            mm_node.state
-        );
-        let mm_score = mm_node.score();
-        if node.is_maximising() {
-            if mm_score > best_node.score() {
+    if node.is_maximising() {
+        let mut score = -100;
+        let mut best_node = node.clone();
+        for child_node in node.children() {
+            let mm_node = minimax(&child_node);
+            let mm_score = mm_node.score();
+            if mm_score > score {
                 best_node = mm_node;
-                // println!(
-                //     "depth: {}, score: {}, a: {}, b: {}\n{}",
-                //     best_node.state.depth(),
-                //     best_node.score(),
-                //     a,
-                //     b,
-                //     node.state
-                // );
             }
-            if mm_score > a {
-                // println!("a: {}", mm_score);
-                // println!(
-                //     "depth: {}, score: {}, a: {}, b: {}\n{}",
-                //     best_node.state.depth(),
-                //     best_node.score(),
-                //     a,
-                //     b,
-                //     node.state
-                // );
-                a = mm_score;
+            if mm_score > score {
+                score = mm_score;
             }
-            if best_node.score() >= b {
-                // println!("node >= b {}\n{}", b, best_node.state);
-                // println!(
-                //     "depth: {}, score: {}, a: {}, b: {}\n{}",
-                //     best_node.state.depth(),
-                //     best_node.score(),
-                //     a,
-                //     b,
-                //     node.state
-                // );
+        }
+        return best_node;
+    } else {
+        let mut score = 100;
+        let mut best_node = node.clone();
+        for child_node in node.children() {
+            let mm_node = minimax(&child_node);
+            let mm_score = mm_node.score();
+            if mm_score < score {
+                best_node = mm_node;
+            }
+            if mm_score < score {
+                score = mm_score;
+            }
+        }
+        return best_node;
+    }
+}
+
+pub fn alphabeta(node: &Node, mut a: i32, mut b: i32) -> Node {
+    if node.is_terminal() {
+        return node.clone();
+    }
+    if node.is_maximising() {
+        let mut score = -100;
+        let mut best_node = node.clone();
+        for child_node in node.children() {
+            let mm_node = alphabeta(&child_node, a, b);
+            let mm_score = mm_node.score();
+            if mm_score > score {
+                best_node = mm_node;
+                score = mm_score;
+            }
+            if score >= b {
                 break;
             }
-        } else {
-            if mm_score < best_node.score() {
+            if score > a {
+                a = score;
+            }
+        }
+        best_node
+    } else {
+        let mut score = 100;
+        let mut best_node = node.clone();
+        for child_node in node.children() {
+            let mm_node = alphabeta(&child_node, a, b);
+            let mm_score = mm_node.score();
+            if mm_score < score {
+                score = mm_score;
                 best_node = mm_node;
-                // println!(
-                //     "depth: {}, score: {}, a: {}, b: {}\n{}",
-                //     best_node.state.depth(),
-                //     best_node.score(),
-                //     a,
-                //     b,
-                //     node.state
-                // );
             }
-            if mm_score < b {
-                // println!("b: {}", mm_score);
-                // println!(
-                //     "depth: {}, score: {}, a: {}, b: {}\n{}",
-                //     best_node.state.depth(),
-                //     best_node.score(),
-                //     a,
-                //     b,
-                //     node.state
-                // );
-                b = mm_score;
-            }
-            if best_node.score() <= a {
-                // println!("node <= b {}\n{}", a, best_node.state);
-                // println!(
-                //     "Entering minimax depth: {}, score: {}, a: {}, b: {}\n{}",
-                //     best_node.state.depth(),
-                //     best_node.score(),
-                //     a,
-                //     b,
-                //     node.state
-                // );
+            if score <= a {
                 break;
             }
-        };
+            if score < b {
+                b = score;
+            }
+        }
+        best_node
     }
-    // println!("Exiting minimax\n{}", best_node.state);
-    println!(
-        "Exiting minimax depth: {}, score: {}, a: {}, b: {}\n{}",
-        best_node.state.depth(),
-        best_node.score(),
-        a,
-        b,
-        best_node.state
-    );
-    best_node
 }
