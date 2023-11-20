@@ -1,27 +1,22 @@
-use crate::game::{CellAddr, GameState};
-use crate::search::Node;
-use crate::search::{alphabeta, minimax};
+use crate::game::GameState;
+use crate::player::{AutoPlayer, InteractivePlayer};
 
 mod game;
+mod player;
 mod search;
 
 fn main() {
-    let mut game = GameState::new()
-        .next_state(&CellAddr { row: 1, col: 1 })
-        .next_state(&CellAddr { row: 2, col: 2 });
-    // .next_state(&CellAddr { row: 3, col: 1 });
-    println!("{}", game);
+    let mut game = GameState::new();
+    let player1 = InteractivePlayer {};
+    let player2 = AutoPlayer {};
+    let mut is_player1 = true;
     while !game.is_terminal() {
-        let node = Node {
-            state: game.clone(),
-            moves: Vec::new(),
-        };
-        let variation = alphabeta(&node, -100, 100);
-        // let variation = minimax(&node);
-        println!("{:?}", variation.moves);
-        let next_move = variation.moves[0].clone();
-        println!("{:?}\n", next_move);
-        game = game.next_state(&next_move);
+        if is_player1 {
+            game = game.next_state(&player1.next_move(&game));
+        } else {
+            game = game.next_state(&player2.next_move(&game));
+        }
         println!("{}", game);
+        is_player1 = !is_player1;
     }
 }

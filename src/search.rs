@@ -39,48 +39,13 @@ impl Node {
     }
 }
 
-pub fn minimax(node: &Node) -> Node {
-    if node.is_terminal() {
-        return node.clone();
-    }
-    if node.is_maximising() {
-        let mut score = -100;
-        let mut best_node = node.clone();
-        for child_node in node.children() {
-            let mm_node = minimax(&child_node);
-            let mm_score = mm_node.score();
-            if mm_score > score {
-                best_node = mm_node;
-            }
-            if mm_score > score {
-                score = mm_score;
-            }
-        }
-        return best_node;
-    } else {
-        let mut score = 100;
-        let mut best_node = node.clone();
-        for child_node in node.children() {
-            let mm_node = minimax(&child_node);
-            let mm_score = mm_node.score();
-            if mm_score < score {
-                best_node = mm_node;
-            }
-            if mm_score < score {
-                score = mm_score;
-            }
-        }
-        return best_node;
-    }
-}
-
 pub fn alphabeta(node: &Node, mut a: i32, mut b: i32) -> Node {
     if node.is_terminal() {
         return node.clone();
     }
+    let mut best_node = node.clone();
     if node.is_maximising() {
         let mut score = -100;
-        let mut best_node = node.clone();
         for child_node in node.children() {
             let mm_node = alphabeta(&child_node, a, b);
             let mm_score = mm_node.score();
@@ -98,7 +63,6 @@ pub fn alphabeta(node: &Node, mut a: i32, mut b: i32) -> Node {
         best_node
     } else {
         let mut score = 100;
-        let mut best_node = node.clone();
         for child_node in node.children() {
             let mm_node = alphabeta(&child_node, a, b);
             let mm_score = mm_node.score();
