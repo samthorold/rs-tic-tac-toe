@@ -1,15 +1,19 @@
 use std::io;
 
 use crate::{
-    game::{CellAddr, GameState},
-    search::{alphabeta, Node},
+    game::{CellAddr, GameNode, GameState},
+    search::alphabeta,
 };
+
+pub trait Player {
+    fn next_move(&self, game: &GameState) -> CellAddr;
+}
 
 pub struct AutoPlayer {}
 
-impl AutoPlayer {
-    pub fn next_move(&self, game: &GameState) -> CellAddr {
-        let node = Node {
+impl Player for AutoPlayer {
+    fn next_move(&self, game: &GameState) -> CellAddr {
+        let node = GameNode {
             state: game.clone(),
             moves: Vec::new(),
         };
@@ -20,8 +24,8 @@ impl AutoPlayer {
 
 pub struct InteractivePlayer {}
 
-impl InteractivePlayer {
-    pub fn next_move(&self, _game: &GameState) -> CellAddr {
+impl Player for InteractivePlayer {
+    fn next_move(&self, _game: &GameState) -> CellAddr {
         let mut next_move = String::new();
         io::stdin()
             .read_line(&mut next_move)
@@ -29,7 +33,6 @@ impl InteractivePlayer {
         let mut itr = next_move.chars();
         let row = usize::try_from(itr.next().unwrap().to_digit(10).unwrap()).unwrap();
         let col = usize::try_from(itr.next().unwrap().to_digit(10).unwrap()).unwrap();
-        println!("{} {}", row, col);
         CellAddr { row, col }
     }
 }

@@ -1,5 +1,7 @@
 use std::fmt::{self, Display, Formatter};
 
+use crate::search::Node;
+
 const MAX_SCORE: i32 = 10;
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
@@ -176,6 +178,45 @@ impl GameState {
             .filter(|cell| cell.value == CellValue::N)
             .count();
         (free_cells == 0) | (self.score() != 0)
+    }
+}
+
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+pub struct GameNode {
+    pub state: GameState,
+    pub moves: Vec<CellAddr>,
+}
+
+impl Node for GameNode {
+    fn children(&self) -> Vec<GameNode> {
+        let mut nodes = Vec::new();
+        for next_move in self.state.next_moves() {
+            let next_state = self.state.next_state(next_move);
+            let mut moves = Vec::new();
+            moves.clone_from(&self.moves);
+            moves.push(next_move.clone());
+            nodes.push(GameNode {
+                state: next_state,
+                moves,
+            });
+        }
+        nodes
+    }
+    fn is_terminal(&self) -> bool {
+        self.state.is_terminal()
+    }
+    fn score(&self) -> i32 {
+        let score = self.state.score();
+        if score < 0 {
+            return score + self.state.depth() as i32;
+        }
+        if score > 0 {
+            return score - self.state.depth() as i32;
+        }
+        score
+    }
+    fn is_maximising(&self) -> bool {
+        return self.state.to_play == CellValue::O;
     }
 }
 

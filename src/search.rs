@@ -1,45 +1,11 @@
-use crate::game::{CellAddr, CellValue, GameState};
-
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
-pub struct Node {
-    pub state: GameState,
-    pub moves: Vec<CellAddr>,
+pub trait Node: Sized {
+    fn children(&self) -> Vec<Self>;
+    fn is_terminal(&self) -> bool;
+    fn score(&self) -> i32;
+    fn is_maximising(&self) -> bool;
 }
 
-impl Node {
-    fn children(&self) -> Vec<Node> {
-        let mut nodes = Vec::new();
-        for next_move in self.state.next_moves() {
-            let next_state = self.state.next_state(next_move);
-            let mut moves = Vec::new();
-            moves.clone_from(&self.moves);
-            moves.push(next_move.clone());
-            nodes.push(Node {
-                state: next_state,
-                moves,
-            });
-        }
-        nodes
-    }
-    pub fn is_terminal(&self) -> bool {
-        self.state.is_terminal()
-    }
-    fn score(&self) -> i32 {
-        let score = self.state.score();
-        if score < 0 {
-            return score + self.state.depth() as i32;
-        }
-        if score > 0 {
-            return score - self.state.depth() as i32;
-        }
-        score
-    }
-    fn is_maximising(&self) -> bool {
-        return self.state.to_play == CellValue::O;
-    }
-}
-
-pub fn alphabeta(node: &Node, mut a: i32, mut b: i32) -> Node {
+pub fn alphabeta<T: Node + Clone>(node: &T, mut a: i32, mut b: i32) -> T {
     if node.is_terminal() {
         return node.clone();
     }
