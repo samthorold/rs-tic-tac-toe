@@ -43,11 +43,11 @@ impl Search {
                 mm_node = self.alphabeta(&child_node, a, b);
                 mm_score = mm_node.score();
                 self.scores.insert(child_hash, mm_score);
-                println!("Inserting: {} {}", child_hash, mm_score);
+                // println!("INS: {} {}", child_hash, mm_score);
             } else {
-                println!("Retrieving: {}", child_hash);
                 mm_node = child_node;
                 mm_score = mm_node.score();
+                // println!("RET: {} {}", child_hash, mm_score);
             }
             if node.is_maximising() {
                 if mm_score > score {

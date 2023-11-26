@@ -112,10 +112,6 @@ impl GameState {
                 }
             }
         }
-        // self.cells
-        //     .iter()
-        //     .filter(|cell| cell.value != CellValue::N)
-        //     .count()
         count
     }
     pub fn score(&self) -> i32 {
@@ -177,11 +173,6 @@ impl GameState {
         0
     }
     pub fn is_terminal(&self) -> bool {
-        // let free_cells = self
-        //     .cells
-        //     .iter()
-        //     .filter(|cell| cell.value == CellValue::N)
-        //     .count();
         (self.depth() == 9) | (self.score() != 0)
     }
 }
@@ -194,7 +185,8 @@ pub struct GameNode {
 
 impl Hash for GameNode {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.state.cells.hash(state);
+        self.state.hash(state);
+        self.moves.hash(state);
     }
 }
 
