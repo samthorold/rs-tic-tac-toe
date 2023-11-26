@@ -1,31 +1,39 @@
 use std::io;
 
-use crate::{
-    game::{CellAddr, GameNode, GameState},
-    search::alphabeta,
-};
+use crate::game::{CellAddr, GameNode, GameState};
+use crate::search::Search;
 
 pub trait Player {
-    fn next_move(&self, game: &GameState) -> CellAddr;
+    fn next_move(&mut self, game: &GameState) -> CellAddr;
 }
 
-pub struct AutoPlayer {}
+pub struct AutoPlayer {
+    search: Search,
+}
 
 impl Player for AutoPlayer {
-    fn next_move(&self, game: &GameState) -> CellAddr {
+    fn next_move(&mut self, game: &GameState) -> CellAddr {
         let node = GameNode {
             state: game.clone(),
             moves: Vec::new(),
         };
-        let variation = alphabeta(&node, -100, 100);
+        let variation = self.search.alphabeta(&node, -100, 100);
         variation.moves[0].clone()
+    }
+}
+
+impl AutoPlayer {
+    pub fn new() -> AutoPlayer {
+        AutoPlayer {
+            search: Search::new(),
+        }
     }
 }
 
 pub struct InteractivePlayer {}
 
 impl Player for InteractivePlayer {
-    fn next_move(&self, _game: &GameState) -> CellAddr {
+    fn next_move(&mut self, _game: &GameState) -> CellAddr {
         let mut next_move = String::new();
         io::stdin()
             .read_line(&mut next_move)

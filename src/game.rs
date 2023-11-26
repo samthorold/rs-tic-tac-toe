@@ -1,4 +1,5 @@
 use std::fmt::{self, Display, Formatter};
+use std::hash::{Hash, Hasher};
 
 use crate::search::Node;
 
@@ -181,10 +182,16 @@ impl GameState {
     }
 }
 
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub struct GameNode {
     pub state: GameState,
     pub moves: Vec<CellAddr>,
+}
+
+impl Hash for GameNode {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.state.cells.hash(state);
+    }
 }
 
 impl Node for GameNode {
