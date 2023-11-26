@@ -17,16 +17,16 @@ fn main() {
     let mut itr = plyrs.chars();
     let player1: Box<dyn Player> = match itr.next().unwrap() {
         'i' => Box::new(InteractivePlayer {}),
-        'a' => Box::new(AutoPlayer::new()),
+        'a' => Box::new(AutoPlayer::new(game::CellValue::O)),
         _ => panic!("Unknown player type"),
     };
     let player2: Box<dyn Player> = match itr.next().unwrap() {
         'i' => Box::new(InteractivePlayer {}),
-        'a' => Box::new(AutoPlayer::new()),
+        'a' => Box::new(AutoPlayer::new(game::CellValue::X)),
         _ => panic!("Unknown player type"),
     };
 
-    let mut game = GameState::new();
+    let mut game = GameState::new(game::CellValue::O);
     // .next_state(&CellAddr { row: 1, col: 1 })
     // .next_state(&CellAddr { row: 1, col: 2 });
     // .next_state(&CellAddr { row: 1, col: 2 });

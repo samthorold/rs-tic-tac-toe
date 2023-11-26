@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::game::{CellAddr, GameNode, GameState};
+use crate::game::{CellAddr, CellValue, GameNode, GameState};
 use crate::search::Search;
 
 pub trait Player {
@@ -8,13 +8,16 @@ pub trait Player {
 }
 
 pub struct AutoPlayer {
+    maximising_player: CellValue,
     search: Search,
 }
 
 impl Player for AutoPlayer {
     fn next_move(&mut self, game: &GameState) -> CellAddr {
+        let mut actual_game = game.clone();
+        actual_game.maximising_player = self.maximising_player;
         let node = GameNode {
-            state: game.clone(),
+            state: actual_game,
             moves: Vec::new(),
         };
         let variation = self.search.alphabeta(&node, -100, 100);
@@ -23,8 +26,9 @@ impl Player for AutoPlayer {
 }
 
 impl AutoPlayer {
-    pub fn new() -> AutoPlayer {
+    pub fn new(maximising_player: CellValue) -> AutoPlayer {
         AutoPlayer {
+            maximising_player,
             search: Search::new(),
         }
     }

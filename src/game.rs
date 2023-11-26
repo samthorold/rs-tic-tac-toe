@@ -29,6 +29,7 @@ struct Cell {
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub struct GameState {
     cells: [[Cell; 3]; 3],
+    pub maximising_player: CellValue,
     pub to_play: CellValue,
 }
 
@@ -50,7 +51,7 @@ impl Display for GameState {
 }
 
 impl GameState {
-    pub fn new() -> GameState {
+    pub fn new(maximising_player: CellValue) -> GameState {
         let mut cells = [[Cell {
             addr: CellAddr { row: 1, col: 1 },
             value: CellValue::N,
@@ -63,6 +64,7 @@ impl GameState {
         }
         GameState {
             cells,
+            maximising_player,
             to_play: CellValue::O,
         }
     }
@@ -90,6 +92,7 @@ impl GameState {
         GameState {
             cells,
             to_play: self.next_player(),
+            maximising_player: self.maximising_player,
         }
     }
     pub fn next_moves(&self) -> Vec<&CellAddr> {
@@ -116,10 +119,9 @@ impl GameState {
     }
     pub fn score(&self) -> i32 {
         for player in PLAYERS {
-            let sign = match player {
-                CellValue::O => 1,
-                CellValue::X => -1,
-                _ => panic!("Not a player."),
+            let sign = match player == self.maximising_player {
+                true => 1,
+                false => -1,
             };
             for row in 1..4 {
                 let all = self
@@ -186,7 +188,6 @@ pub struct GameNode {
 impl Hash for GameNode {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.state.hash(state);
-        // self.moves.hash(state);
     }
 }
 
@@ -219,7 +220,7 @@ impl Node for GameNode {
         score
     }
     fn is_maximising(&self) -> bool {
-        return self.state.to_play == CellValue::O;
+        return self.state.to_play == self.state.maximising_player;
     }
 }
 
@@ -228,20 +229,20 @@ mod test_score {
     use super::*;
     #[test]
     fn new_game() {
-        let game = GameState::new();
+        let game = GameState::new(CellValue::O);
         assert_eq!(game.score(), 0);
         assert_eq!(game.is_terminal(), false);
         assert_eq!(game.to_play, CellValue::O);
     }
     #[test]
     fn one_move() {
-        let game = GameState::new().next_state(&CellAddr { row: 1, col: 1 });
+        let game = GameState::new(CellValue::O).next_state(&CellAddr { row: 1, col: 1 });
         assert_eq!(game.score(), 0);
         assert_eq!(game.is_terminal(), false);
     }
     #[test]
     fn x_wins_row() {
-        let game = GameState::new()
+        let game = GameState::new(CellValue::O)
             .next_state(&CellAddr { row: 1, col: 1 })
             .next_state(&CellAddr { row: 2, col: 1 })
             .next_state(&CellAddr { row: 1, col: 2 })
@@ -252,7 +253,7 @@ mod test_score {
     }
     #[test]
     fn x_wins_col() {
-        let game = GameState::new()
+        let game = GameState::new(CellValue::O)
             .next_state(&CellAddr { row: 1, col: 1 })
             .next_state(&CellAddr { row: 1, col: 2 })
             .next_state(&CellAddr { row: 2, col: 1 })
@@ -263,7 +264,7 @@ mod test_score {
     }
     #[test]
     fn x_wins_diag_from_top_left() {
-        let game = GameState::new()
+        let game = GameState::new(CellValue::O)
             .next_state(&CellAddr { row: 1, col: 1 })
             .next_state(&CellAddr { row: 1, col: 2 })
             .next_state(&CellAddr { row: 2, col: 2 })
@@ -274,7 +275,7 @@ mod test_score {
     }
     #[test]
     fn x_wins_diag_from_bottom_left() {
-        let game = GameState::new()
+        let game = GameState::new(CellValue::O)
             .next_state(&CellAddr { row: 3, col: 1 })
             .next_state(&CellAddr { row: 1, col: 2 })
             .next_state(&CellAddr { row: 2, col: 2 })
