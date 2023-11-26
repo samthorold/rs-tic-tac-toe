@@ -5,7 +5,7 @@ use crate::search::Node;
 
 const MAX_SCORE: i32 = 10;
 
-#[derive(PartialEq, Eq, Hash, Debug, Clone)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 pub struct CellAddr {
     pub row: usize,
     pub col: usize,
@@ -20,7 +20,7 @@ pub enum CellValue {
 
 const PLAYERS: [CellValue; 2] = [CellValue::O, CellValue::X];
 
-#[derive(PartialEq, Eq, Hash, Debug, Clone)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone, Copy)]
 struct Cell {
     addr: CellAddr,
     value: CellValue,
@@ -28,22 +28,22 @@ struct Cell {
 
 #[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub struct GameState {
-    cells: [Cell; 9],
+    cells: [[Cell; 3]; 3],
     pub to_play: CellValue,
 }
 
 impl Display for GameState {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut s = String::new();
-        for cell in &self.cells {
-            match cell.value {
-                CellValue::X => s.push('x'),
-                CellValue::O => s.push('o'),
-                CellValue::N => s.push('.'),
-            };
-            if cell.addr.col == 3 {
-                s.push('\n');
+        for row in &self.cells {
+            for cell in row {
+                match cell.value {
+                    CellValue::X => s.push('x'),
+                    CellValue::O => s.push('o'),
+                    CellValue::N => s.push('.'),
+                };
             }
+            s.push('\n');
         }
         write!(f, "{}", s)
     }
@@ -51,17 +51,18 @@ impl Display for GameState {
 
 impl GameState {
     pub fn new() -> GameState {
-        let mut cells = Vec::new();
+        let mut cells = [[Cell {
+            addr: CellAddr { row: 1, col: 1 },
+            value: CellValue::N,
+        }; 3]; 3];
         for row in 1..4 {
             for col in 1..4 {
-                cells.push(Cell {
-                    addr: CellAddr { row, col },
-                    value: CellValue::N,
-                })
+                cells[row - 1][col - 1].addr.row = row;
+                cells[row - 1][col - 1].addr.col = col;
             }
         }
         GameState {
-            cells: <[Cell; 9]>::try_from(cells).unwrap(),
+            cells,
             to_play: CellValue::O,
         }
     }
@@ -81,42 +82,41 @@ impl GameState {
         if (col < 1) | (col > 9) {
             panic!("Row value invalid.")
         }
-        let mut cells = Vec::new();
-        for cell in &self.cells {
-            let is_changed_cell = (cell.addr.row == row) & (cell.addr.col == col);
-            if is_changed_cell & (cell.value != CellValue::N) {
-                panic!("Trying to set an already set cell.")
-            }
-            cells.push(Cell {
-                addr: CellAddr {
-                    row: cell.addr.row,
-                    col: cell.addr.col,
-                },
-                value: match is_changed_cell {
-                    true => self.to_play,
-                    false => cell.value,
-                },
-            })
-        }
+        let mut cells = self.cells.clone();
+        cells[row - 1][col - 1] = Cell {
+            addr: CellAddr { row, col },
+            value: self.to_play,
+        };
         GameState {
-            cells: <[Cell; 9]>::try_from(cells).unwrap(),
+            cells,
             to_play: self.next_player(),
         }
     }
     pub fn next_moves(&self) -> Vec<&CellAddr> {
         let mut addrs = Vec::new();
-        for cell in &self.cells {
-            if cell.value == CellValue::N {
-                addrs.push(&cell.addr);
+        for row in &self.cells {
+            for cell in row {
+                if cell.value == CellValue::N {
+                    addrs.push(&cell.addr);
+                }
             }
         }
         addrs
     }
     pub fn depth(&self) -> usize {
-        self.cells
-            .iter()
-            .filter(|cell| cell.value != CellValue::N)
-            .count()
+        let mut count = 0;
+        for row in self.cells {
+            for cell in row {
+                if cell.value != CellValue::N {
+                    count += 1;
+                }
+            }
+        }
+        // self.cells
+        //     .iter()
+        //     .filter(|cell| cell.value != CellValue::N)
+        //     .count()
+        count
     }
     pub fn score(&self) -> i32 {
         for player in PLAYERS {
@@ -129,6 +129,7 @@ impl GameState {
                 let all = self
                     .cells
                     .iter()
+                    .flatten()
                     .filter(|cell| cell.addr.row == row)
                     .all(|cell| cell.value == player);
                 if all {
@@ -139,6 +140,7 @@ impl GameState {
                 let all = self
                     .cells
                     .iter()
+                    .flatten()
                     .filter(|cell| cell.addr.col == col)
                     .all(|cell| cell.value == player);
                 if all {
@@ -148,6 +150,7 @@ impl GameState {
             let all = self
                 .cells
                 .iter()
+                .flatten()
                 .filter(|cell| {
                     (cell.addr.row == 1 && cell.addr.col == 1)
                         | (cell.addr.row == 2 && cell.addr.col == 2)
@@ -160,6 +163,7 @@ impl GameState {
             let all = self
                 .cells
                 .iter()
+                .flatten()
                 .filter(|cell| {
                     (cell.addr.row == 3 && cell.addr.col == 1)
                         | (cell.addr.row == 2 && cell.addr.col == 2)
@@ -173,12 +177,12 @@ impl GameState {
         0
     }
     pub fn is_terminal(&self) -> bool {
-        let free_cells = self
-            .cells
-            .iter()
-            .filter(|cell| cell.value == CellValue::N)
-            .count();
-        (free_cells == 0) | (self.score() != 0)
+        // let free_cells = self
+        //     .cells
+        //     .iter()
+        //     .filter(|cell| cell.value == CellValue::N)
+        //     .count();
+        (self.depth() == 9) | (self.score() != 0)
     }
 }
 
