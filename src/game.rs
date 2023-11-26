@@ -186,7 +186,7 @@ pub struct GameNode {
 impl Hash for GameNode {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.state.hash(state);
-        self.moves.hash(state);
+        // self.moves.hash(state);
     }
 }
 

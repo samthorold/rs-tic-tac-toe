@@ -28,7 +28,7 @@ fn main() {
 
     let mut game = GameState::new();
     // .next_state(&CellAddr { row: 1, col: 1 })
-    // .next_state(&CellAddr { row: 2, col: 2 })
+    // .next_state(&CellAddr { row: 1, col: 2 });
     // .next_state(&CellAddr { row: 1, col: 2 });
     println!("{}", game);
     let mut players: Vec<Box<dyn Player>> = Vec::new();
