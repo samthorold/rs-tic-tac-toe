@@ -1,7 +1,5 @@
 use std::io;
 
-use game::CellAddr;
-
 use crate::game::GameState;
 use crate::player::{AutoPlayer, InteractivePlayer, Player};
 
@@ -27,9 +25,9 @@ fn main() {
     };
 
     let mut game = GameState::new(game::CellValue::O);
-    // .next_state(&CellAddr { row: 1, col: 1 })
-    // .next_state(&CellAddr { row: 1, col: 2 });
-    // .next_state(&CellAddr { row: 1, col: 2 });
+    // .next_state(&game::CellAddr { row: 1, col: 1 });
+    // .next_state(&game::CellAddr { row: 2, col: 2 });
+    // .next_state(&game::CellAddr { row: 3, col: 1 });
     println!("{}", game);
     let mut players: Vec<Box<dyn Player>> = Vec::new();
     players.push(player1);

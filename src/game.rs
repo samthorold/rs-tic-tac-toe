@@ -253,13 +253,13 @@ mod test_score {
     }
     #[test]
     fn x_wins_col() {
-        let game = GameState::new(CellValue::O)
+        let game = GameState::new(CellValue::X)
             .next_state(&CellAddr { row: 1, col: 1 })
             .next_state(&CellAddr { row: 1, col: 2 })
             .next_state(&CellAddr { row: 2, col: 1 })
             .next_state(&CellAddr { row: 2, col: 2 })
             .next_state(&CellAddr { row: 3, col: 1 });
-        assert_eq!(game.score(), 10);
+        assert_eq!(game.score(), -10);
         assert_eq!(game.is_terminal(), true);
     }
     #[test]
@@ -283,5 +283,46 @@ mod test_score {
             .next_state(&CellAddr { row: 1, col: 3 });
         assert_eq!(game.score(), 10);
         assert_eq!(game.is_terminal(), true);
+    }
+}
+
+#[cfg(test)]
+mod test_is_maximising {
+    use super::*;
+    #[test]
+    fn test_x_is_maximising() {
+        let game = GameState::new(CellValue::O);
+        let node = GameNode {
+            state: game,
+            moves: Vec::new(),
+        };
+        assert!(node.is_maximising());
+    }
+    #[test]
+    fn test_x_is_maximising_move_2() {
+        let game = GameState::new(CellValue::O).next_state(&CellAddr { row: 1, col: 1 });
+        let node = GameNode {
+            state: game,
+            moves: Vec::new(),
+        };
+        assert!(!node.is_maximising());
+    }
+    #[test]
+    fn test_o_is_maximising() {
+        let game = GameState::new(CellValue::X);
+        let node = GameNode {
+            state: game,
+            moves: Vec::new(),
+        };
+        assert!(!node.is_maximising());
+    }
+    #[test]
+    fn test_o_is_maximising_move_2() {
+        let game = GameState::new(CellValue::X).next_state(&CellAddr { row: 1, col: 1 });
+        let node = GameNode {
+            state: game,
+            moves: Vec::new(),
+        };
+        assert!(node.is_maximising());
     }
 }
