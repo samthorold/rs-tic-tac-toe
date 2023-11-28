@@ -1,5 +1,6 @@
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
+use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 
 fn calculate_hash<T: Hash>(t: &T) -> u64 {
@@ -8,7 +9,8 @@ fn calculate_hash<T: Hash>(t: &T) -> u64 {
     s.finish()
 }
 
-pub trait Node: Sized + Clone + Hash {
+pub trait Node: Sized + Clone + Hash + Display {
+    fn depth(&self) -> usize;
     fn children(&self) -> Vec<Self>;
     fn is_terminal(&self) -> bool;
     fn score(&self) -> i32;
@@ -43,11 +45,11 @@ impl Search {
                 mm_node = self.alphabeta(&child_node, a, b);
                 mm_score = mm_node.score();
                 self.scores.insert(child_hash, mm_score);
-                // println!("INS: {} {}", child_hash, mm_score);
+                // println!("INS:\n{} {}", child_node, mm_score);
             } else {
-                mm_node = child_node;
+                mm_node = child_node.clone();
                 mm_score = *self.scores.get(&child_hash).unwrap();
-                // println!("RET: {} {}", child_hash, mm_score);
+                // println!("RET: {} {}", child_node.is_maximising(), mm_score);
             }
             if node.is_maximising() {
                 if mm_score > score {

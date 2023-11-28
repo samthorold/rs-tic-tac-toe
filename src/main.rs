@@ -24,22 +24,21 @@ fn main() {
         _ => panic!("Unknown player type"),
     };
 
-    let mut game = GameState::new(game::CellValue::O);
-    // .next_state(&game::CellAddr { row: 1, col: 1 });
+    let mut game = GameState::new();
+    // .next_state(&game::CellAddr { row: 1, col: 1 })
     // .next_state(&game::CellAddr { row: 2, col: 2 });
     // .next_state(&game::CellAddr { row: 3, col: 1 });
     println!("{}", game);
     let mut players: Vec<Box<dyn Player>> = Vec::new();
     players.push(player1);
     players.push(player2);
-    let mut is_player1 = true;
     while !game.is_terminal() {
+        let is_player1 = game.depth() % 2 == 0;
         if is_player1 {
             game = game.next_state(&players[0].next_move(&game));
         } else {
             game = game.next_state(&players[1].next_move(&game));
         }
         println!("{}", game);
-        is_player1 = !is_player1;
     }
 }

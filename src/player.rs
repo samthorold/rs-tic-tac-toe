@@ -14,11 +14,10 @@ pub struct AutoPlayer {
 
 impl Player for AutoPlayer {
     fn next_move(&mut self, game: &GameState) -> CellAddr {
-        let mut actual_game = game.clone();
-        actual_game.maximising_player = self.maximising_player;
         let node = GameNode {
-            state: actual_game,
+            state: game.clone(),
             moves: Vec::new(),
+            maximising_player: self.maximising_player,
         };
         let variation = self.search.alphabeta(&node, -100, 100);
         variation.moves[0].clone()
