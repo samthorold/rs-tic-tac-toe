@@ -194,6 +194,7 @@ impl Display for GameNode {
         write!(f, "{}", self.state)
     }
 }
+
 impl Node for GameNode {
     fn depth(&self) -> usize {
         self.state.depth()
