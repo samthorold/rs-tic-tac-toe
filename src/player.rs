@@ -43,9 +43,6 @@ impl Player for AutoPlayer {
             Some(child) => child.moves[0],
             _ => panic!("Expected a best child node"),
         }
-        // best_child.moves[0]
-        // let variation = self.search.alphabeta(&node, -100, 100);
-        // variation.moves[0]
     }
 }
 
