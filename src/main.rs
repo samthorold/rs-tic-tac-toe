@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::game::GameState;
+use crate::game::{GameState, Value};
 use crate::player::{AutoPlayer, InteractivePlayer, Player};
 
 mod game;
@@ -15,12 +15,12 @@ fn main() {
     let mut itr = plyrs.chars();
     let player1: Box<dyn Player> = match itr.next().unwrap() {
         'i' => Box::new(InteractivePlayer {}),
-        'a' => Box::new(AutoPlayer::new(game::CellValue::O)),
+        'a' => Box::new(AutoPlayer::new(Value::O)),
         _ => panic!("Unknown player type"),
     };
     let player2: Box<dyn Player> = match itr.next().unwrap() {
         'i' => Box::new(InteractivePlayer {}),
-        'a' => Box::new(AutoPlayer::new(game::CellValue::X)),
+        'a' => Box::new(AutoPlayer::new(Value::X)),
         _ => panic!("Unknown player type"),
     };
 
@@ -33,11 +33,13 @@ fn main() {
     players.push(player1);
     players.push(player2);
     while !game.is_terminal() {
-        let is_player1 = game.depth() % 2 == 0;
+        let is_player1 = game.depth % 2 == 0;
         if is_player1 {
-            game = game.next_state(&players[0].next_move(&game));
+            let next_move = players[0].next_move(&game);
+            game = game.next_state(&next_move);
         } else {
-            game = game.next_state(&players[1].next_move(&game));
+            let next_move = players[1].next_move(&game);
+            game = game.next_state(&next_move);
         }
         println!("{}", game);
     }
