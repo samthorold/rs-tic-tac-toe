@@ -1,3 +1,5 @@
+//! Tic tac toe implementation.
+
 use std::fmt::{self, Display, Formatter};
 use std::hash::{Hash, Hasher};
 

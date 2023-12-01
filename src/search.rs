@@ -1,6 +1,7 @@
+//! Minimax search algorithm with alpha beta pruning.
+
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
-use std::fmt::Display;
 use std::hash::{Hash, Hasher};
 
 fn calculate_hash<T: Hash>(t: &T) -> u64 {
@@ -9,7 +10,7 @@ fn calculate_hash<T: Hash>(t: &T) -> u64 {
     s.finish()
 }
 
-pub trait Node: Sized + Clone + Hash + Display {
+pub trait Node: Sized + Clone + Hash {
     fn depth(&self) -> usize;
     fn children(&self) -> Vec<Self>;
     fn is_terminal(&self) -> bool;
