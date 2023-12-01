@@ -1,5 +1,6 @@
 //! Implementations for different tic tac toe players.
 
+use core::panic;
 use std::io;
 
 use crate::game::{GameNode, GameState, Position};
@@ -19,18 +20,32 @@ impl Player for AutoPlayer {
             state: game.clone(),
             moves: Vec::new(),
         };
-        // let mut best_child;
-        // let mut best_score = -100;
-        // for child in node.children() {
-        //     let score = self.search.alphabeta(&child, -100, 100);
-        //     if score > best_score {
-        //         best_child = child;
-        //         best_score = score;
-        //     }
-        // }
+        let mut best_child: Option<GameNode> = None;
+        let mut best_score = match node.is_maximising() {
+            true => -100,
+            false => 100,
+        };
+        for child in node.children() {
+            let score = self.search.alphabeta(&child, -100, 100);
+            if node.is_maximising() {
+                if score > best_score {
+                    best_child = Some(child);
+                    best_score = score;
+                }
+            } else {
+                if score < best_score {
+                    best_child = Some(child);
+                    best_score = score;
+                }
+            }
+        }
+        match best_child {
+            Some(child) => child.moves[0],
+            _ => panic!("Expected a best child node"),
+        }
         // best_child.moves[0]
-        let variation = self.search.alphabeta(&node, -100, 100);
-        variation.moves[0]
+        // let variation = self.search.alphabeta(&node, -100, 100);
+        // variation.moves[0]
     }
 }
 
