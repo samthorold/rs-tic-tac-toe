@@ -44,12 +44,10 @@ impl Search {
             if !self.scores.contains_key(&child_hash) {
                 mm_node = self.alphabeta(&child_node, a, b);
                 mm_score = mm_node.score();
-                self.scores.insert(child_hash, mm_score);
-                // println!("INS:\n{} {}", child_node, mm_score);
+                // self.scores.insert(child_hash, mm_score);
             } else {
                 mm_node = child_node.clone();
                 mm_score = *self.scores.get(&child_hash).unwrap();
-                // println!("RET: {} {}", child_node.is_maximising(), mm_score);
             }
             if node.is_maximising() {
                 if mm_score > score {

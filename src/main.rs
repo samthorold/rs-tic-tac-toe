@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::game::{GameState, Value};
+use crate::game::GameState;
 use crate::player::{AutoPlayer, InteractivePlayer, Player};
 
 mod game;
@@ -15,12 +15,12 @@ fn main() {
     let mut itr = plyrs.chars();
     let player1: Box<dyn Player> = match itr.next().unwrap() {
         'i' => Box::new(InteractivePlayer {}),
-        'a' => Box::new(AutoPlayer::new(Value::O)),
+        'a' => Box::new(AutoPlayer::new()),
         _ => panic!("Unknown player type"),
     };
     let player2: Box<dyn Player> = match itr.next().unwrap() {
         'i' => Box::new(InteractivePlayer {}),
-        'a' => Box::new(AutoPlayer::new(Value::X)),
+        'a' => Box::new(AutoPlayer::new()),
         _ => panic!("Unknown player type"),
     };
 

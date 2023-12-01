@@ -106,9 +106,9 @@ impl GameState {
         }
         addrs
     }
-    pub fn score(&self, maximising_player: Value) -> i32 {
+    pub fn score(&self) -> i32 {
         for player in PLAYERS {
-            let sign = match player == maximising_player {
+            let sign = match player == Value::O {
                 true => 1,
                 false => -1,
             };
@@ -164,14 +164,13 @@ impl GameState {
         0
     }
     pub fn is_terminal(&self) -> bool {
-        (self.depth == 9) | (self.score(Value::O) != 0)
+        (self.depth == 9) | (self.score() != 0)
     }
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct GameNode {
     pub state: GameState,
-    pub maximising_player: Value,
     pub moves: Vec<Position>,
 }
 
@@ -200,7 +199,6 @@ impl Node for GameNode {
             moves.push(*next_move);
             nodes.push(GameNode {
                 state: next_state,
-                maximising_player: self.maximising_player,
                 moves,
             });
         }
@@ -210,7 +208,7 @@ impl Node for GameNode {
         self.state.is_terminal()
     }
     fn score(&self) -> i32 {
-        let score = self.state.score(self.maximising_player);
+        let score = self.state.score();
         if score < 0 {
             return score + self.state.depth as i32;
         }
@@ -220,7 +218,7 @@ impl Node for GameNode {
         score
     }
     fn is_maximising(&self) -> bool {
-        self.state.to_play == self.maximising_player
+        self.state.to_play == Value::O
     }
 }
 
@@ -230,14 +228,14 @@ mod test_score {
     #[test]
     fn new_game() {
         let game = GameState::new();
-        assert_eq!(game.score(Value::O), 0);
+        assert_eq!(game.score(), 0);
         assert_eq!(game.is_terminal(), false);
         assert_eq!(game.to_play, Value::O);
     }
     #[test]
     fn one_move() {
         let game = GameState::new().next_state(&Position { row: 1, col: 1 });
-        assert_eq!(game.score(Value::O), 0);
+        assert_eq!(game.score(), 0);
         assert_eq!(game.is_terminal(), false);
     }
     #[test]
@@ -248,7 +246,7 @@ mod test_score {
             .next_state(&Position { row: 1, col: 2 })
             .next_state(&Position { row: 2, col: 2 })
             .next_state(&Position { row: 1, col: 3 });
-        assert_eq!(game.score(Value::O), 10);
+        assert_eq!(game.score(), 10);
         assert_eq!(game.is_terminal(), true);
     }
     #[test]
@@ -259,7 +257,7 @@ mod test_score {
             .next_state(&Position { row: 2, col: 2 })
             .next_state(&Position { row: 2, col: 3 })
             .next_state(&Position { row: 3, col: 3 });
-        assert_eq!(game.score(Value::O), 10);
+        assert_eq!(game.score(), 10);
         assert_eq!(game.is_terminal(), true);
     }
     #[test]
@@ -270,7 +268,7 @@ mod test_score {
             .next_state(&Position { row: 2, col: 2 })
             .next_state(&Position { row: 2, col: 3 })
             .next_state(&Position { row: 1, col: 3 });
-        assert_eq!(game.score(Value::O), 10);
+        assert_eq!(game.score(), 10);
         assert_eq!(game.is_terminal(), true);
     }
 }
@@ -283,7 +281,6 @@ mod test_is_maximising {
         let game = GameState::new();
         let node = GameNode {
             state: game,
-            maximising_player: Value::O,
             moves: Vec::new(),
         };
         assert!(node.is_maximising());
@@ -293,7 +290,6 @@ mod test_is_maximising {
         let game = GameState::new().next_state(&Position { row: 1, col: 1 });
         let node = GameNode {
             state: game,
-            maximising_player: Value::O,
             moves: Vec::new(),
         };
         assert!(!node.is_maximising());
