@@ -30,22 +30,21 @@ impl Search {
     }
 
     pub fn alphabeta<T: Node>(&mut self, node: &T, mut a: i32, mut b: i32) -> i32 {
+        let node_hash = calculate_hash(&node);
         if node.is_terminal() {
-            return node.score();
+            let node_score = node.score();
+            self.scores.insert(node_hash, node_score);
+            return node_score;
         }
-        let mut mm_score;
+        if self.scores.contains_key(&node_hash) {
+            return *self.scores.get(&node_hash).unwrap();
+        }
         let mut score = match node.is_maximising() {
             true => -100,
             false => 100,
         };
         for child_node in node.children() {
-            let child_hash = calculate_hash(&child_node);
-            if !self.scores.contains_key(&child_hash) {
-                mm_score = self.alphabeta(&child_node, a, b);
-                // self.scores.insert(child_hash, mm_score);
-            } else {
-                mm_score = *self.scores.get(&child_hash).unwrap();
-            }
+            let mm_score = self.alphabeta(&child_node, a, b);
             if node.is_maximising() {
                 if mm_score > score {
                     score = mm_score;

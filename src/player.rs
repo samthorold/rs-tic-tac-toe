@@ -32,11 +32,9 @@ impl Player for AutoPlayer {
                     best_child = Some(child);
                     best_score = score;
                 }
-            } else {
-                if score < best_score {
-                    best_child = Some(child);
-                    best_score = score;
-                }
+            } else if score < best_score {
+                best_child = Some(child);
+                best_score = score;
             }
         }
         match best_child {
